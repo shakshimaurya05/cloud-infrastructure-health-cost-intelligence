@@ -36,12 +36,7 @@ function buildLiveError(err) {
   return e;
 }
 
-// ─── EC2 Instances ───────────────────────────────────────────────────────────
 
-/**
- * Fetches ALL EC2 instances from AWS using pagination.
- * Normalises the response to a flat array with the full field set.
- */
 export async function getInventoryInstances() {
   const isConfigured = await checkAwsConfigured();
   const mode = getExecutionMode(isConfigured);
@@ -106,11 +101,7 @@ export async function getInventoryInstances() {
   }
 }
 
-// ─── EBS Volumes ─────────────────────────────────────────────────────────────
 
-/**
- * Fetches ALL EBS volumes from AWS using pagination.
- */
 export async function getInventoryVolumes() {
   const isConfigured = await checkAwsConfigured();
   const mode = getExecutionMode(isConfigured);

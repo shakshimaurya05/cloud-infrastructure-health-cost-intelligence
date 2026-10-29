@@ -8,17 +8,19 @@ import {
   AlertTriangle,
   Settings,
   Cloud,
-  ShieldCheck
+  ShieldCheck,
+  Activity
 } from 'lucide-react';
 
 export default function Sidebar({ mode = 'demo' }) {
   const navItems = [
-    { name: 'Overview',       path: '/',             icon: LayoutDashboard },
-    { name: 'Infrastructure', path: '/infrastructure', icon: Server },
-    { name: 'Inventory',      path: '/inventory',     icon: Package },
-    { name: 'Cost Intelligence', path: '/costs',      icon: DollarSign },
-    { name: 'Alerts & Actions',  path: '/alerts',     icon: AlertTriangle },
-    { name: 'System Info',       path: '/settings',   icon: Settings },
+    { name: 'Overview',          path: '/',             icon: LayoutDashboard },
+    { name: 'Infrastructure',    path: '/infrastructure', icon: Server },
+    { name: 'Health & Monitoring', path: '/monitoring', icon: Activity },
+    { name: 'Inventory',         path: '/inventory',    icon: Package },
+    { name: 'Cost Intelligence', path: '/costs',        icon: DollarSign },
+    { name: 'Alerts & Actions',  path: '/alerts',       icon: AlertTriangle },
+    { name: 'System Info',       path: '/settings',     icon: Settings },
   ];
 
   return (

@@ -17,6 +17,7 @@ import costsRoutes from './routes/costs.routes.js';
 import alertsRoutes from './routes/alerts.routes.js';
 import recommendationsRoutes from './routes/recommendations.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
+import monitoringRoutes from './routes/monitoring.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -73,6 +74,7 @@ app.use('/api/costs', costsRoutes);
 app.use('/api/alerts', alertsRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/monitoring', monitoringRoutes);
 
 // Root route for API welcome / quick verification
 app.get('/', (req, res) => {
@@ -89,7 +91,8 @@ app.get('/', (req, res) => {
       '/api/recommendations',
       '/api/inventory/instances',
       '/api/inventory/volumes',
-      '/api/inventory/elastic-ips'
+      '/api/inventory/elastic-ips',
+      '/api/monitoring'
     ]
   });
 });

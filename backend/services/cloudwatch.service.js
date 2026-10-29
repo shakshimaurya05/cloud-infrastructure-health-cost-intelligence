@@ -44,26 +44,29 @@ export async function getInstanceCpuMetrics(instanceId, instanceName = '', lookb
       .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
       .map((dp) => ({
         timestamp: new Date(dp.Timestamp).toISOString(),
-        average: dp.Average !== undefined ? parseFloat(dp.Average.toFixed(2)) : 0,
-        maximum: dp.Maximum !== undefined ? parseFloat(dp.Maximum.toFixed(2)) : 0,
-        minimum: dp.Minimum !== undefined ? parseFloat(dp.Minimum.toFixed(2)) : 0
+        // Use null rather than 0 when a statistic is genuinely absent
+        average: dp.Average !== undefined ? parseFloat(dp.Average.toFixed(2)) : null,
+        maximum: dp.Maximum !== undefined ? parseFloat(dp.Maximum.toFixed(2)) : null,
+        minimum: dp.Minimum !== undefined ? parseFloat(dp.Minimum.toFixed(2)) : null
       }));
 
-    const avgVal = datapoints.length > 0
-      ? parseFloat((datapoints.reduce((sum, d) => sum + d.average, 0) / datapoints.length).toFixed(2))
-      : 0;
-    const maxVal = datapoints.length > 0
-      ? Math.max(...datapoints.map((d) => d.maximum))
-      : 0;
-    const minVal = datapoints.length > 0
-      ? Math.min(...datapoints.map((d) => d.minimum))
-      : 0;
+    // No datapoints → null aggregate values. Never substitute zero for missing data.
+    const validAvgs = datapoints.map((d) => d.average).filter((v) => v !== null);
+    const validMaxs = datapoints.map((d) => d.maximum).filter((v) => v !== null);
+    const validMins = datapoints.map((d) => d.minimum).filter((v) => v !== null);
+
+    const avgVal = validAvgs.length > 0
+      ? parseFloat((validAvgs.reduce((s, v) => s + v, 0) / validAvgs.length).toFixed(2))
+      : null;
+    const maxVal = validMaxs.length > 0 ? Math.max(...validMaxs) : null;
+    const minVal = validMins.length > 0 ? Math.min(...validMins) : null;
 
     return {
       instanceId,
       instanceName: instanceName || instanceId,
       metricName: 'CPUUtilization',
       unit: 'Percent',
+      hasData: datapoints.length > 0,
       average: avgVal,
       maximum: maxVal,
       minimum: minVal,
@@ -72,14 +75,16 @@ export async function getInstanceCpuMetrics(instanceId, instanceName = '', lookb
   } catch (error) {
     console.warn(`[CloudWatch Service] Failed to get metrics for ${instanceId}: ${error.message}`);
     // Graceful handling of missing/inaccessible metrics
+    // NOTE: average/maximum/minimum are null — callers must NOT treat null as 0
     return {
       instanceId,
       instanceName: instanceName || instanceId,
       metricName: 'CPUUtilization',
       unit: 'Percent',
-      average: 0,
-      maximum: 0,
-      minimum: 0,
+      hasData: false,
+      average: null,
+      maximum: null,
+      minimum: null,
       datapoints: [],
       error: error.message
     };
