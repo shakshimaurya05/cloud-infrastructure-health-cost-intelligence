@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Server,
+  Package,
   DollarSign,
   AlertTriangle,
   Settings,
@@ -12,11 +13,12 @@ import {
 
 export default function Sidebar({ mode = 'demo' }) {
   const navItems = [
-    { name: 'Overview', path: '/', icon: LayoutDashboard },
+    { name: 'Overview',       path: '/',             icon: LayoutDashboard },
     { name: 'Infrastructure', path: '/infrastructure', icon: Server },
-    { name: 'Cost Intelligence', path: '/costs', icon: DollarSign },
-    { name: 'Alerts & Actions', path: '/alerts', icon: AlertTriangle },
-    { name: 'System Info', path: '/settings', icon: Settings },
+    { name: 'Inventory',      path: '/inventory',     icon: Package },
+    { name: 'Cost Intelligence', path: '/costs',      icon: DollarSign },
+    { name: 'Alerts & Actions',  path: '/alerts',     icon: AlertTriangle },
+    { name: 'System Info',       path: '/settings',   icon: Settings },
   ];
 
   return (

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Layout from './components/layout/Layout';
 import OverviewPage from './pages/OverviewPage';
 import InfrastructurePage from './pages/InfrastructurePage';
+import InventoryPage from './pages/InventoryPage';
 import CostIntelligencePage from './pages/CostIntelligencePage';
 import AlertsRecommendationsPage from './pages/AlertsRecommendationsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -49,6 +50,11 @@ function AppContent() {
           title: 'Infrastructure Monitoring',
           subtitle: 'Real-time EC2 compute inventory, states, and CloudWatch utilization'
         };
+      case '/inventory':
+        return {
+          title: 'Infrastructure Inventory',
+          subtitle: 'EC2 instances, EBS volumes, and Elastic IPs — search, filter, and inspect resources'
+        };
       case '/costs':
         return {
           title: 'Cloud Cost Intelligence',
@@ -88,6 +94,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<OverviewPage />} />
           <Route path="/infrastructure" element={<InfrastructurePage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/costs" element={<CostIntelligencePage />} />
           <Route path="/alerts" element={<AlertsRecommendationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

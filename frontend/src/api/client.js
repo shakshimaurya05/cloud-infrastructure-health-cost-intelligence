@@ -5,7 +5,10 @@ import {
   mockMetrics,
   mockCosts,
   mockAlerts,
-  mockRecommendations
+  mockRecommendations,
+  mockInventoryInstances,
+  mockInventoryVolumes,
+  mockInventoryElasticIps
 } from './mockData.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -143,3 +146,159 @@ export async function fetchRecommendations(params = {}) {
 }
 
 export { API_BASE_URL };
+
+// ─── Module 1: Infrastructure Inventory ────────────────────────────────────
+
+/**
+ * Fetches paginated EC2 instance inventory.
+ * @param {object} params - { search, state, region, page, pageSize }
+ */
+export async function fetchInventoryInstances(params = {}) {
+  const query = new URLSearchParams();
+  if (params.search)   query.set('search',   params.search);
+  if (params.state)    query.set('state',    params.state);
+  if (params.region)   query.set('region',   params.region);
+  if (params.page)     query.set('page',     String(params.page));
+  if (params.pageSize) query.set('pageSize', String(params.pageSize));
+
+  const qs = query.toString() ? `?${query.toString()}` : '';
+  const fallback = {
+    instances: mockInventoryInstances,
+    total: mockInventoryInstances.length,
+    page: 1, pageSize: 25, totalPages: 1,
+    lastRefreshed: new Date().toISOString(),
+    mode: 'demo'
+  };
+
+  const result = await fetchWithFallback(`/inventory/instances${qs}`, fallback);
+
+  // Client-side filtering when using fallback
+  if (result.isFallback) {
+    let items = mockInventoryInstances;
+    if (params.state) items = items.filter((i) => i.state.toLowerCase() === params.state.toLowerCase());
+    if (params.region) items = items.filter((i) => i.region?.toLowerCase() === params.region.toLowerCase());
+    if (params.search) {
+      const t = params.search.toLowerCase();
+      items = items.filter((i) =>
+        ['instanceId','name','instanceType','availabilityZone','region','privateIp','publicIp']
+          .some((k) => String(i[k] ?? '').toLowerCase().includes(t))
+      );
+    }
+    const page = params.page || 1;
+    const size = params.pageSize || 25;
+    const start = (page - 1) * size;
+    result.data = {
+      instances: items.slice(start, start + size),
+      total: items.length,
+      page, pageSize: size,
+      totalPages: Math.max(1, Math.ceil(items.length / size)),
+      lastRefreshed: new Date().toISOString(),
+      mode: 'demo'
+    };
+  }
+
+  return result;
+}
+
+/**
+ * Fetches paginated EBS volume inventory.
+ * @param {object} params - { search, state, volumeType, encrypted, page, pageSize }
+ */
+export async function fetchInventoryVolumes(params = {}) {
+  const query = new URLSearchParams();
+  if (params.search)     query.set('search',     params.search);
+  if (params.state)      query.set('state',      params.state);
+  if (params.volumeType) query.set('volumeType', params.volumeType);
+  if (params.encrypted !== undefined) query.set('encrypted', String(params.encrypted));
+  if (params.page)       query.set('page',       String(params.page));
+  if (params.pageSize)   query.set('pageSize',   String(params.pageSize));
+
+  const qs = query.toString() ? `?${query.toString()}` : '';
+  const fallback = {
+    volumes: mockInventoryVolumes,
+    total: mockInventoryVolumes.length,
+    page: 1, pageSize: 25, totalPages: 1,
+    lastRefreshed: new Date().toISOString(),
+    mode: 'demo'
+  };
+
+  const result = await fetchWithFallback(`/inventory/volumes${qs}`, fallback);
+
+  if (result.isFallback) {
+    let items = mockInventoryVolumes;
+    if (params.state)      items = items.filter((v) => v.state === params.state);
+    if (params.volumeType) items = items.filter((v) => v.volumeType === params.volumeType);
+    if (params.encrypted !== undefined) items = items.filter((v) => v.encrypted === (params.encrypted === 'true' || params.encrypted === true));
+    if (params.search) {
+      const t = params.search.toLowerCase();
+      items = items.filter((v) =>
+        ['volumeId','name','attachedInstanceId','attachmentDevice','availabilityZone']
+          .some((k) => String(v[k] ?? '').toLowerCase().includes(t))
+      );
+    }
+    const page = params.page || 1;
+    const size = params.pageSize || 25;
+    const start = (page - 1) * size;
+    result.data = {
+      volumes: items.slice(start, start + size),
+      total: items.length,
+      page, pageSize: size,
+      totalPages: Math.max(1, Math.ceil(items.length / size)),
+      lastRefreshed: new Date().toISOString(),
+      mode: 'demo'
+    };
+  }
+
+  return result;
+}
+
+/**
+ * Fetches paginated Elastic IP inventory.
+ * @param {object} params - { search, associated, page, pageSize }
+ */
+export async function fetchInventoryElasticIps(params = {}) {
+  const query = new URLSearchParams();
+  if (params.search !== undefined && params.search !== '') query.set('search', params.search);
+  if (params.associated !== undefined) query.set('associated', String(params.associated));
+  if (params.page)     query.set('page',     String(params.page));
+  if (params.pageSize) query.set('pageSize', String(params.pageSize));
+
+  const qs = query.toString() ? `?${query.toString()}` : '';
+  const fallback = {
+    elasticIps: mockInventoryElasticIps,
+    total: mockInventoryElasticIps.length,
+    page: 1, pageSize: 25, totalPages: 1,
+    lastRefreshed: new Date().toISOString(),
+    mode: 'demo'
+  };
+
+  const result = await fetchWithFallback(`/inventory/elastic-ips${qs}`, fallback);
+
+  if (result.isFallback) {
+    let items = mockInventoryElasticIps;
+    if (params.associated !== undefined) {
+      const assoc = params.associated === 'true' || params.associated === true;
+      items = items.filter((e) => e.associated === assoc);
+    }
+    if (params.search) {
+      const t = params.search.toLowerCase();
+      items = items.filter((e) =>
+        ['allocationId','publicIp','name','associatedInstanceId','privateIpAddress']
+          .some((k) => String(e[k] ?? '').toLowerCase().includes(t))
+      );
+    }
+    const page = params.page || 1;
+    const size = params.pageSize || 25;
+    const start = (page - 1) * size;
+    result.data = {
+      elasticIps: items.slice(start, start + size),
+      total: items.length,
+      page, pageSize: size,
+      totalPages: Math.max(1, Math.ceil(items.length / size)),
+      lastRefreshed: new Date().toISOString(),
+      mode: 'demo'
+    };
+  }
+
+  return result;
+}
